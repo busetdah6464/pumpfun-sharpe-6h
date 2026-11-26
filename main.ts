@@ -22,20 +22,24 @@
 //
 // This is the Sharpe variant: the ranking is the hourly Sharpe ratio, not
 // net PnL (PnL still has to be above zero for a prize). So it trades the
-// same filter as the 6h PnL sibling, but smaller (0.05 SOL per coin) and
-// with a much tighter stop: small, steady, low-variance gains beat one
-// moonshot when the score is a Sharpe ratio.
+// same filter as the 6h PnL sibling, but half the size (0.10 SOL per
+// coin): small, steady, low-variance gains beat one moonshot when the
+// score is a Sharpe ratio.
 
 import { runBot } from './vendor/agentfun-bot.ts';
 import { createStrategy, DEFAULT_PARAMS, type Params } from './strategy.ts';
 
-// Tuned on the first 6h of the kit dev window (2 Nov 2026, 23,986 events)
-// with the pilot's grid tool, ranking by an hourly-Sharpe proxy (mean /
-// std of hourly realised PnL over the 6 hours), preferring flat, robust
-// regions over the single best cell:
-//   Sharpe proxy 0.592, net +0.055 SOL, 4 of 6 hours positive,
-//   32 coins, 64 fills, max drawdown 0.001 — guardrails (20+ coins,
-//   round trips >= 0.01 SOL, drawdown <= 50%) cleared, PnL > 0.
+// Tuned on the four 6h slices of the kit dev window (2–3 Nov 2026) with
+// the pilot's grid tool, ranking by an hourly-Sharpe proxy (mean / std of
+// hourly realised PnL over each 6h slice) and requiring net PnL > 0 in
+// every slice — not just the first one. An earlier tuning (0.05 SOL stake,
+// −8% stop) looked best on the first 6h alone (Sharpe proxy 0.592) but
+// lost money in 3 of the 4 slices, so it was rejected: a tight stop is not
+// a robust Sharpe lever here, it just bleeds fees.
+//   mean Sharpe proxy +0.196 across slices (0.435 / 0.164 / 0.056 / 0.129),
+//   net +0.063 / +0.020 / +0.010 / +0.025 SOL per slice — positive in all
+//   four, 27–50 coins per slice, max drawdown <= 0.007. Guardrails (20+
+//   coins, round trips >= 0.01 SOL, drawdown <= 50%) cleared, PnL > 0.
 const PARAMS: Partial<Params> = {
   // Entry: buy only in the first 10 slots after creation, once at least
   // 4 trades printed and the creator's own create-slot buy was >= 0.5 SOL.
@@ -53,20 +57,23 @@ const PARAMS: Partial<Params> = {
   // 1%-of-real-reserve cap still keeps every buy >= 0.01 SOL.
   minRealSol: 1_000_000_000,
   maxRealSol: 30_000_000_000,
-  // Size: 0.05 SOL per coin — half the PnL sibling's stake. Smaller size
+  // Size: 0.10 SOL per coin — half the PnL sibling's stake. Smaller size
   // means smaller hourly swings, which is what the Sharpe ratio rewards.
   // One buy only (no adds, no order splitting — splits only burn extra tx
   // fees and crowd the 16-orders-per-batch cap).
-  stakeLamports: 50_000_000,
+  stakeLamports: 100_000_000,
   minBuyLamports: 5_000_000,
   maxAdds: 0,
   maxSplit: 1,
   baseSplit: 1,
-  // Exits: +25% take profit, -8% stop (tight: losers are cut before they
-  // can drag an hour negative), 10-slot max hold, out at once on a
-  // creator sell. No partial take-profit (it cost net on the dev window).
+  // Exits: +25% take profit, -20% stop, 10-slot max hold, out at once on a
+  // creator sell. The tight −8% stop tried first looked best on one slice
+  // and lost money on three others, so the stop is the same −20% as the
+  // PnL sibling — the Sharpe edge here comes from the smaller size, not
+  // from cutting losers earlier. No partial take-profit (it cost net on
+  // the dev window).
   tpBps: 2500,
-  slBps: 800,
+  slBps: 2000,
   tp1Bps: 1_000_000,
   maxHold: 10,
   exitOnDevSell: true,

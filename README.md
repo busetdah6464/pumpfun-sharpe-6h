@@ -8,16 +8,16 @@ A paper-money launch sniper for [Pump.fun Sharpe Sprint — Cleanest Paper Bot W
 
 ## How it trades
 
-Every coin is watched from its `CreateEvent`. The bot buys only in the coin's first 10 slots, and only when the launch passes a rug filter: the creator bought at least 0.5 SOL in the create slot, at least 4 trades already printed, at most 10 distinct buyers (no Sybil bundle), the creator has not sold, and the curve holds 1–30 SOL of real SOL. It buys **0.05 SOL** per coin, takes profit at +25%, cuts at **−8%**, never holds past 10 slots, and exits at once when the creator sells.
+Every coin is watched from its `CreateEvent`. The bot buys only in the coin's first 10 slots, and only when the launch passes a rug filter: the creator bought at least 0.5 SOL in the create slot, at least 4 trades already printed, at most 10 distinct buyers (no Sybil bundle), the creator has not sold, and the curve holds 1–30 SOL of real SOL. It buys **0.10 SOL** per coin, takes profit at +25%, cuts at **−20%**, never holds past 10 slots, and exits at once when the creator sells.
 
 The strategy is the kit pilot sniper (`strategy.ts`, vendored from the competition kit), tuned for Sharpe, not PnL — see [STRATEGY.md](STRATEGY.md) for the numbers. The entrypoint is `main.ts` (Node 22, TypeScript run as-is); the SDK shim is `vendor/agentfun-bot.ts`, a byte-identical copy of the kit file. No network, no secrets, no randomness: the same replay always produces the same orders.
 
-## Dev-window result (first 6h of the kit window, 2 Nov 2026)
+## Dev-window result (four 6h slices of the kit window, 2–3 Nov 2026)
 
-- Hourly Sharpe proxy **0.592** (mean / std of hourly realised PnL; 4 of 6 hours positive)
-- Net PnL **+0.055 SOL** (above zero, as the prize requires)
-- 32 coins, 64 fills, max drawdown **0.001** (guardrail: 20+ coins, round trips ≥ 0.01 SOL, drawdown ≤ 50%)
-- Cross-checked on a second, independent simulator implementation: +0.055 SOL
+- Hourly Sharpe proxy **+0.196 mean** across slices (0.435 / 0.164 / 0.056 / 0.129)
+- Net PnL **positive in all four slices**: +0.063 / +0.020 / +0.010 / +0.025 SOL (above zero, as the prize requires)
+- 27–50 coins per slice, max drawdown **≤ 0.007** (guardrail: 20+ coins, round trips ≥ 0.01 SOL, drawdown ≤ 50%)
+- Cross-checked on a second, independent simulator implementation
 
 ## Grade locally
 
