@@ -18,7 +18,7 @@ The strategy is the kit pilot sniper (`strategy.ts`, vendored from the competiti
 - Net PnL **positive in all four slices**: +0.063 / +0.020 / +0.010 / +0.025 SOL (above zero, as the prize requires)
 - 27–50 coins per slice, max drawdown **≤ 0.007** (guardrail: 20+ coins, round trips ≥ 0.01 SOL, drawdown ≤ 50%)
 - Cross-checked on a second, independent simulator implementation
-- Real-grader check (`grade-local --driver process`) runs on the kit's full 24h dev window, not the 6h slices above: net PnL **+0.076 SOL**, 141 coins, 282 fills, max drawdown 0.0087, guardrails met; regrade reproduced byte for byte (deterministic). The 6h slices are the relevant numbers for this bounty: net positive in all four (+0.063 / +0.020 / +0.010 / +0.025 SOL).
+- Real-grader check (`grade-local --driver process`) runs on the kit's full 24h dev window, not the 6h slices above: net PnL **+0.129 SOL** under this bounty's own kit (03e4f532; +0.076 under the identical-dataset replay kit — the kit slug shifts the fail draw), 140 coins, 280 fills, max drawdown 0.0084, guardrails met; regrade reproduced byte for byte (deterministic). The 6h slices are the relevant numbers for this bounty: net positive in all four (+0.063 / +0.020 / +0.010 / +0.025 SOL).
 
 ## Grade locally
 
